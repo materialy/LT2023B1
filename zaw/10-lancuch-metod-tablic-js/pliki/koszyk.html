@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Sklep Pod Lipą — koszyk</title>
+</head>
+<body>
+  <h1>Sklep Pod Lipą — koszyk</h1>
+  <p>Otwórz konsolę (F12) i sprawdzaj wyniki po każdej zmianie.</p>
+
+  <script>
+    // tak przychodzi tekst z pola formularza
+    const ilosci = '3, 1, 5, 2';
+
+    // TODO 1: zamień napis ilosci na tablicę liczb (split + map(Number))
+    const liczby = [];
+    console.log(liczby); // [3, 1, 5, 2]
+
+    // TODO 2: policz łączną liczbę sztuk (reduce, start od 0)
+    const sztuk = 0;
+    console.log('Sztuk razem:', sztuk); // 11
+
+
+    const koszyk = [
+      { nazwa: 'Zeszyt', cena: 6, ilosc: 3, dostepny: true },
+      { nazwa: 'Plecak', cena: 89, ilosc: 1, dostepny: false },
+      { nazwa: 'Długopis', cena: 4, ilosc: 5, dostepny: true },
+      { nazwa: 'Kredki', cena: 15, ilosc: 2, dostepny: true }
+    ];
+
+    // TODO 3: jednym łańcuchem policz koszt DOSTĘPNYCH produktów (cena × ilość)
+    // filter → map → reduce
+    const razem = 0;
+    console.log('Do zapłaty:', razem, 'zł'); // 68 zł
+
+    // Sprawdź: czy tablica koszyk po wszystkim wygląda tak samo jak na początku?
+    console.log(koszyk);
+  </script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Sklep Pod Lipą — szukanie w tablicy</title>
+</head>
+<body>
+  <h1>Sklep Pod Lipą</h1>
+  <p>Otwórz konsolę (F12) i sprawdzaj wyniki po każdej zmianie.</p>
+
+  <script>
+    const produkty = [
+      { nazwa: 'Ołówek', cena: 2, dostepny: true },
+      { nazwa: 'Zeszyt', cena: 6, dostepny: false },
+      { nazwa: 'Plecak', cena: 89, dostepny: true },
+      { nazwa: 'Linijka', cena: 4, dostepny: true },
+      { nazwa: 'Kredki', cena: 15, dostepny: false },
+      { nazwa: 'Gumka', cena: 1, dostepny: true }
+    ];
+
+    // TODO 1: pierwszy niedostępny produkt (find)
+    const pierwszyBrak = null;
+    console.log('Pierwszy niedostępny:', pierwszyBrak);
+
+    // TODO 2: czy któryś produkt kosztuje ponad 50 zł? (some)
+    const jestDrogi = null;
+    console.log('Czy jest coś droższego niż 50 zł?', jestDrogi);
+
+    // TODO 3: czy wszystkie produkty mają cenę większą od 0? (every)
+    const cenyDodatnie = null;
+    console.log('Czy wszystkie ceny są dodatnie?', cenyDodatnie);
+
+    // TODO 4: znajdź pozycję produktu o nazwie ze zmiennej szukana (findIndex).
+    // Jeśli go nie ma (-1), wypisz 'Brak w ofercie', w przeciwnym razie 'Pozycja: N'.
+    const szukana = 'Kredki';
+
+
+    // TODO 5: z tablicy kody usuń puste napisy (filter(Boolean)),
+    // a potem powtórki (indexOf). Oczekiwany wynik: ['A1', 'B2', 'C3']
+    const kody = ['A1', '', 'B2', 'A1', '', 'C3', 'B2'];
+    const czyste = kody;
+    console.log(czyste);
+  </script>
+</body>
+</html>

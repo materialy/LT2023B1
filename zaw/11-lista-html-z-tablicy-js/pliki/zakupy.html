@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Sklep Pod Lipą — lista produktów</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 30rem; margin: 2rem auto; }
+    input { font-size: 1rem; padding: .4rem; width: 100%; }
+    li { padding: .2rem 0; }
+  </style>
+</head>
+<body>
+  <h1>Sklep Pod Lipą</h1>
+  <input id="szukaj" placeholder="Szukaj produktu…">
+  <p id="licznik"></p>
+  <ul id="lista"></ul>
+
+  <script>
+    const produkty = ['Mleko', 'Chleb', 'Masło', 'Ser żółty', 'Jabłka', 'Makaron', 'Miód', 'Musztarda'];
+
+    const szukaj = document.querySelector('#szukaj');
+    const lista = document.querySelector('#lista');
+    const licznik = document.querySelector('#licznik');
+
+    // TODO 1: wstaw do listy elementy <li> z podanej tablicy
+    // (map + szablon w odwrotnych apostrofach + join(''), wynik do lista.innerHTML)
+    function rysuj(tablica) {
+
+      // TODO 2: wpisz do licznika tekst "Znaleziono: N" (tablica.length)
+
+    }
+
+    // TODO 3: po każdym znaku w polu szukaj pokaż tylko pasujące produkty
+    // zdarzenie 'input', toLowerCase() po obu stronach, includes, filter, rysuj(...)
+
+
+    rysuj(produkty); // na start cała lista
+  </script>
+</body>
+</html>

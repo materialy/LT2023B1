@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="materialy" content="strona-grupy">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'self' 'unsafe-inline' file:; font-src 'self' file:; img-src 'self' data: file:; frame-src 'self'; form-action 'none'; base-uri 'none'; object-src 'none'">
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="../../assets/fonty.css">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Funkcje strzałkowe w JavaScript: zapis, return i this</title>
+<style>
+
+:root{
+  --paper:#FBFCFF; --grid:#DCE6F5; --ink:#1D2A5C; --ink-soft:#4A5785;
+  --margin:#D9433B; --marker:#FFE45C; --code-bg:#EEF2FA; --line:#C5D3EA;
+  --ok:#1F8A5B; --bad:#C2372F; --panel:#FFFFFF;
+  --sans:"Bricolage Grotesque", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono:"JetBrains Mono", Consolas, "Courier New", monospace;
+  --hand:"Caveat", "Comic Sans MS", cursive;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#131A2E; --grid:#1F2945; --ink:#E3E8F7; --ink-soft:#A3AECF;
+    --margin:#F06A5F; --marker:#E8C93A; --code-bg:#1B2440; --line:#2E3A5E;
+    --ok:#4CC98E; --bad:#F07A70; --panel:#18203A;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131A2E; --grid:#1F2945; --ink:#E3E8F7; --ink-soft:#A3AECF;
+  --margin:#F06A5F; --marker:#E8C93A; --code-bg:#1B2440; --line:#2E3A5E;
+  --ok:#4CC98E; --bad:#F07A70; --panel:#18203A;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  height:100%;margin:0;color:var(--ink);font-family:var(--sans);
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:24px 24px;
+  overflow:hidden;
+}
+/* czerwony margines zeszytu */
+body::before{content:"";position:fixed;top:0;bottom:0;left:clamp(18px,5vw,64px);width:2px;background:var(--margin);opacity:.7;z-index:0}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--margin);outline-offset:2px}
+
+.deck{position:relative;height:100%;z-index:1}
+.slide{
+  position:absolute;inset:0 0 72px 0;overflow-y:auto;
+  padding:clamp(20px,5vh,56px) clamp(20px,5vw,72px) 24px calc(clamp(18px,5vw,64px) + clamp(20px,4vw,48px));
+  opacity:0;visibility:hidden;transform:translateX(24px);
+  transition:opacity .35s ease, transform .35s ease, visibility 0s .35s;
+}
+.slide.active{opacity:1;visibility:visible;transform:none;transition:opacity .35s ease, transform .35s ease}
+.slide.before{transform:translateX(-24px)}
+.inner{max-width:1080px}
+h1,h2{font-weight:800;letter-spacing:-.02em;line-height:1.05;margin:0 0 .5em}
+h1{font-size:clamp(2.4rem,7vw,5.2rem)}
+h2{font-size:clamp(1.8rem,4.2vw,3rem)}
+p,li{font-size:clamp(1rem,1.6vw,1.2rem);line-height:1.55;max-width:68ch}
+.lead{font-size:clamp(1.1rem,2vw,1.45rem);color:var(--ink-soft)}
+.note{font-family:var(--hand);font-size:clamp(1.4rem,2.4vw,1.9rem);color:var(--margin);line-height:1.15;transform:rotate(-1.5deg);display:inline-block}
+mark{background:linear-gradient(transparent 45%, var(--marker) 45%, var(--marker) 90%, transparent 90%);color:inherit;padding:0 .1em}
+code,.mono{font-family:var(--mono);font-size:.92em}
+.k{color:#7A3FC2}.s{color:#1F8A5B}.n{color:#C2372F}.p{color:#2563C9}.c{color:var(--ink-soft);font-style:italic}
+:root[data-theme="dark"] .k{color:#C29BFF} :root[data-theme="dark"] .s{color:#6FD8A2} :root[data-theme="dark"] .n{color:#FF8E86} :root[data-theme="dark"] .p{color:#7FB0FF}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .k{color:#C29BFF}:root:not([data-theme="light"]) .s{color:#6FD8A2}:root:not([data-theme="light"]) .n{color:#FF8E86}:root:not([data-theme="light"]) .p{color:#7FB0FF}}
+
+/* tytuł */
+.title-code{font-family:var(--mono);font-size:clamp(1rem,2.2vw,1.5rem);background:var(--code-bg);border:2px solid var(--ink);padding:.9em 1.1em;display:inline-block;margin:1.2em 0;box-shadow:6px 6px 0 var(--ink)}
+.cursor{display:inline-block;width:.6em;height:1.1em;background:var(--ink);vertical-align:-.15em;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.meta{color:var(--ink-soft);font-size:1rem}
+.meta a{color:inherit}
+
+/* agenda */
+.agenda{list-style:none;padding:0;margin:0;display:grid;gap:2px;max-width:760px}
+.agenda li{max-width:none}
+.agenda button{width:100%;display:grid;grid-template-columns:5.5em 1fr;gap:1em;text-align:left;background:transparent;border:0;border-bottom:1px dashed var(--line);padding:.6em .2em;font-size:clamp(1rem,1.6vw,1.15rem)}
+.agenda button:hover{background:var(--code-bg)}
+.agenda .t{font-family:var(--mono);color:var(--margin)}
+
+/* dwie kolumny */
+.two{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:clamp(20px,4vw,48px);align-items:start}
+@media (max-width:820px){.two{grid-template-columns:1fr}}
+
+/* drzewo plików */
+.tree{font-family:var(--mono);font-size:clamp(.9rem,1.4vw,1.05rem);background:var(--panel);border:2px solid var(--ink);padding:1em;box-shadow:6px 6px 0 var(--ink)}
+.tree button{display:block;width:100%;text-align:left;background:none;border:0;padding:.35em .5em;border-radius:3px;font-family:var(--mono);font-size:inherit}
+.tree button:hover{background:var(--code-bg)}
+.tree button[aria-pressed="true"]{background:var(--marker);color:#1D2A5C}
+.tree .dir{padding:.35em .5em;color:var(--ink-soft)}
+.tree .ind1{padding-left:1.6em}.tree .ind2{padding-left:3.2em}
+.explain{border-left:4px solid var(--margin);padding:.4em 0 .4em 1em;min-height:9em}
+.explain h3{margin:0 0 .3em;font-size:1.4rem;font-family:var(--mono)}
+.tag{display:inline-block;font-size:.85rem;border:1.5px solid currentColor;padding:.05em .55em;border-radius:99px;margin-bottom:.6em}
+
+/* kod klikalny */
+.codebox{background:var(--code-bg);border:2px solid var(--ink);font-family:var(--mono);font-size:clamp(.85rem,1.45vw,1.05rem);overflow-x:auto;box-shadow:6px 6px 0 var(--ink)}
+.codebox .ln{display:flex;width:100%;background:none;border:0;text-align:left;padding:.28em .8em;font-family:var(--mono);font-size:inherit;white-space:pre}
+.codebox .ln::before{content:attr(data-n);width:2em;flex:none;color:var(--ink-soft);opacity:.6}
+.codebox button.ln:hover{background:var(--grid)}
+.codebox .ln.on{background:var(--marker);color:#1D2A5C}
+.codebox .ln.on span{color:#1D2A5C}
+.codebox div.ln{cursor:default}
+
+/* strumienie */
+.streams{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:1em;margin:1.5em 0;max-width:820px}
+.box{border:2px solid var(--ink);background:var(--panel);padding:1em;text-align:center;font-weight:600;min-height:5.5em;display:flex;flex-direction:column;justify-content:center;gap:.3em}
+.box small{font-weight:400;color:var(--ink-soft)}
+.arrow{font-family:var(--mono);font-size:clamp(1.6rem,4vw,2.6rem);font-weight:600;text-align:center;color:var(--margin);min-width:3.5em;position:relative}
+.packet{position:absolute;top:-1.2em;left:50%;font-size:.9rem;background:var(--marker);color:#1D2A5C;padding:.1em .5em;transform:translateX(-50%);white-space:nowrap;opacity:0}
+.packet.go-right{animation:goR 1.1s ease forwards}
+.packet.go-left{animation:goL 1.1s ease forwards}
+@keyframes goR{0%{opacity:0;transform:translateX(-160%)}20%{opacity:1}100%{opacity:0;transform:translateX(60%)}}
+@keyframes goL{0%{opacity:0;transform:translateX(60%)}20%{opacity:1}100%{opacity:0;transform:translateX(-160%)}}
+.seg{display:inline-flex;border:2px solid var(--ink);margin-bottom:.5em}
+.seg button{background:transparent;border:0;padding:.5em 1em;font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+
+/* RAM */
+.ram{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px;max-width:560px;margin:1em 0}
+.cell{border:1.5px solid var(--line);background:var(--panel);aspect-ratio:1.4;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--mono);font-size:.78rem;color:var(--ink-soft);transition:background .3s,border-color .3s}
+.cell b{font-size:1.25rem;color:var(--ink)}
+.cell.used{border:2px solid var(--margin);background:var(--code-bg)}
+.cell.used .nm{color:var(--margin);font-weight:600}
+.btn{border:2px solid var(--ink);background:var(--panel);padding:.55em 1.1em;font-weight:600;box-shadow:3px 3px 0 var(--ink);transition:transform .1s, box-shadow .1s}
+.btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:.6em;align-items:center;margin:.6em 0}
+input[type=number],input[type=text]{font-family:var(--mono);font-size:1rem;border:2px solid var(--ink);background:var(--panel);color:var(--ink);padding:.45em .6em;width:7em}
+.log{font-family:var(--mono);font-size:.95rem;min-height:1.5em;color:var(--ink-soft)}
+
+/* dzielenie */
+.divrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1em;margin-top:1em;max-width:560px}
+.res{border:2px dashed var(--line);padding:.8em;font-family:var(--mono)}
+.res .big{font-size:1.8rem;font-weight:600;color:var(--ink)}
+
+/* przypisanie stepper */
+.assign{font-family:var(--mono);font-size:clamp(1rem,1.8vw,1.25rem)}
+.assign .st{padding:.35em .6em;border-left:4px solid transparent}
+.assign .st.on{border-left-color:var(--margin);background:var(--code-bg)}
+.xbox{display:inline-flex;flex-direction:column;align-items:center;border:2px solid var(--margin);padding:.6em 1.4em;font-family:var(--mono);margin-top:1em}
+.xbox b{font-size:2.4rem}
+
+/* plan programu */
+.flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;max-width:960px;margin:1.5em 0;counter-reset:f}
+@media (max-width:700px){.flow{grid-template-columns:1fr}}
+.flow > div{border:2px solid var(--ink);margin:-1px;padding:1.2em;background:var(--panel);position:relative}
+.flow h3{margin:0 0 .3em;font-size:1.3rem}
+.flow h3::before{counter-increment:f;content:counter(f) ". ";color:var(--margin)}
+.flow code{display:block;margin-top:.6em;background:var(--code-bg);padding:.4em .6em}
+
+/* konsola */
+.console{background:#0E1430;color:#D8E0FF;font-family:var(--mono);font-size:clamp(.85rem,1.4vw,1rem);padding:1em;min-height:12em;border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink);white-space:pre-wrap;word-break:break-word}
+.console .bar{display:flex;gap:6px;margin:-.4em 0 .8em}
+.console .bar i{width:10px;height:10px;border-radius:50%;background:#3A4570;display:block}
+.console input{background:transparent;border:0;border-bottom:1px solid #D8E0FF;color:#FFE45C;font-family:var(--mono);font-size:inherit;width:6em;padding:0}
+.console .ret{color:#7FA0E0}
+
+/* quiz */
+.quiz{max-width:760px}
+.qnum{font-family:var(--mono);color:var(--margin)}
+.opts{display:grid;gap:.5em;margin:1em 0}
+.opts button{text-align:left;border:2px solid var(--ink);background:var(--panel);padding:.75em 1em;font-size:clamp(1rem,1.5vw,1.1rem)}
+.opts button:hover:not(:disabled){background:var(--code-bg)}
+.opts button.right{background:var(--ok);color:#fff;border-color:var(--ok)}
+.opts button.wrong{background:var(--bad);color:#fff;border-color:var(--bad)}
+.opts button:disabled{cursor:default}
+.fb{min-height:3em}
+
+/* podsumowanie */
+.check{list-style:none;padding:0;columns:2 280px;column-gap:2.5em;max-width:900px}
+.check li{break-inside:avoid;padding:.35em 0 .35em 1.8em;position:relative;max-width:none}
+.check li::before{content:"✓";position:absolute;left:0;color:var(--margin);font-weight:800}
+.links a{color:var(--ink);font-weight:600}
+
+/* nawigacja */
+nav.ctl{position:fixed;left:0;right:0;bottom:0;z-index:5;height:calc(72px + env(safe-area-inset-bottom,0px));padding:0 clamp(12px,3vw,32px) env(safe-area-inset-bottom,0px);display:flex;align-items:center;gap:12px;background:color-mix(in srgb, var(--paper) 88%, transparent);backdrop-filter:blur(6px);border-top:2px solid var(--ink)}
+.dots{flex:1;display:flex;gap:4px;align-items:center;overflow-x:auto;padding:6px 2px}
+.dots button{flex:1;min-width:14px;height:8px;border:0;background:var(--line);padding:0}
+.dots button.done{background:var(--ink-soft)}
+.dots button.cur{background:var(--margin);height:12px}
+.navbtn{width:44px;height:44px;border:2px solid var(--ink);background:var(--panel);font-size:1.2rem;font-weight:800;display:grid;place-items:center}
+.count{font-family:var(--mono);font-size:.9rem;min-width:4.2em;text-align:center}
+.theme{width:44px;height:44px;border:2px solid var(--ink);background:var(--panel)}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+.flowc{display:grid;gap:12px;max-width:540px;justify-items:center;margin:1em 0}
+.dec{border:2px solid var(--ink);background:var(--panel);padding:.8em 1.4em;font-family:var(--mono);font-weight:600;border-radius:40px}
+.branches{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+.br{border:2px solid var(--line);padding:.8em;text-align:center;background:var(--panel);transition:background .3s,border-color .3s}
+.br b{display:block;font-family:var(--mono);color:var(--margin)}
+.br.on{border-color:var(--margin);background:var(--marker);color:#1D2A5C}
+.br.on b{color:#1D2A5C}
+.tbl{border-collapse:collapse;font-family:var(--mono);font-size:clamp(.9rem,1.4vw,1.05rem)}
+.tbl td,.tbl th{border:1.5px solid var(--line);padding:.45em .9em;text-align:left;background:var(--panel)}
+.tbl th{font-family:var(--sans)}
+.chip{display:inline-block;padding:.1em .7em;border-radius:99px;font-weight:600;color:#fff;font-family:var(--mono)}
+.chip.t{background:var(--ok)}.chip.f{background:var(--bad)}
+.tog{display:inline-flex;align-items:center;gap:.5em;border:2px solid var(--ink);background:var(--panel);padding:.45em .9em;font-weight:600}
+.tog[aria-pressed="true"]{background:var(--ok);color:#fff;border-color:var(--ok)}
+.tog[aria-pressed="false"]{background:var(--bad);color:#fff;border-color:var(--bad)}
+.bars{display:flex;align-items:flex-end;gap:10px;height:200px;max-width:560px;border-bottom:2px solid var(--ink);margin:2em 0 .3em}
+.bars div{flex:1;background:var(--ink);position:relative;transition:height .4s;min-height:2px}
+.bars div span{position:absolute;top:-1.5em;left:0;right:0;text-align:center;font-family:var(--mono);font-size:.8rem;color:var(--ink)}
+.blabels{display:flex;gap:10px;max-width:560px;font-family:var(--mono)}
+.blabels span{flex:1;text-align:center}
+.out{font-family:var(--mono);background:#0E1430;color:#D8E0FF;padding:.8em 1em;border:2px solid var(--ink);white-space:pre-wrap;word-break:break-word;min-height:3em;max-height:14em;overflow:auto;font-size:clamp(.85rem,1.4vw,1rem)}
+.out .warn{color:#FF8E86}
+select{font:inherit;border:2px solid var(--ink);background:var(--panel);color:var(--ink);padding:.4em}
+input[type=range]{width:100%;max-width:420px;accent-color:var(--margin)}
+.part{background:none;border:0;border-bottom:3px solid var(--margin);font-family:var(--mono);font-size:inherit;padding:0 .15em;color:inherit;cursor:pointer}
+.part:hover{background:var(--grid)}
+.part.on{background:var(--marker);color:#1D2A5C}
+.part.on span{color:#1D2A5C}
+.big-num{font-family:var(--mono);font-size:clamp(2rem,6vw,4rem);font-weight:600;letter-spacing:-.02em}
+.trace{max-height:16em;overflow:auto}
+.trace .tbl td{padding:.3em .7em}
+.trace tr.now td{background:var(--marker);color:#1D2A5C}
+.pane h3{margin:.2em 0 .5em}
+label.inl{display:inline-flex;align-items:center;gap:.4em}
+
+/* ===== Układ pełnoekranowy (rzutnik, tablica) ===== */
+.inner{max-width:min(1800px,100%)}
+.lead{max-width:95ch}
+.two{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:clamp(20px,3vw,60px)}
+@media (max-width:820px){.two{grid-template-columns:1fr}}
+/* elementy, które miały sztywną maks. szerokość, rozciągają się na całą kolumnę */
+.inner [style*="max-width"]{max-width:none!important}
+.ram,.bars,.blabels,.check,.flow,.divrow,.streams{max-width:none}
+.agenda,.quiz{max-width:1200px}
+/* linie kodu: zawijanie zamiast przewijania, numer linii w stałej kolumnie, zachowane spacje */
+.codebox{overflow-x:visible}
+.codebox .ln{display:block;position:relative;width:100%;padding:.28em .8em .28em 3em;white-space:pre-wrap;overflow-wrap:anywhere;text-align:left}
+.codebox .ln::before{position:absolute;left:.8em;top:.28em;width:2em}
+/* większe pismo na dużych ekranach */
+@media (min-width:1400px){html{font-size:17px}}
+@media (min-width:1750px){html{font-size:19px}}
+@media (min-width:2300px){html{font-size:23px}}
+@media (min-width:1400px){
+  p,li{font-size:clamp(1rem,1.15vw,1.3rem);max-width:80ch}
+  .codebox{font-size:clamp(.9rem,1.05vw,1.2rem)}
+  .out,.console,.tbl{font-size:clamp(.9rem,.95vw,1.1rem)}
+}
+/* nagłówki skalowane także do wysokości ekranu (niskie rzutniki 720p) */
+h1{font-size:clamp(2.2rem,min(7vw,11vh),5.2rem)}
+h2{font-size:clamp(1.6rem,min(4.2vw,6.5vh),3rem)}
+@media (max-height:800px){
+  .slide{padding-top:clamp(14px,3vh,28px)}
+  h1,h2{margin-bottom:.35em}
+  p,li{line-height:1.45}
+  .row{margin:.4em 0}
+  .title-code{margin:.7em 0}
+  .codebox .ln{padding-top:.2em;padding-bottom:.2em}
+  .codebox .ln::before{top:.2em}
+}
+@media (max-height:800px){.check li{padding:.2em 0 .2em 1.8em}}
+
+</style>
+</head>
+<body>
+<main class="deck" id="deck">
+<section class="slide" data-title="Start"><div class="inner">
+  <p class="note">Zaawansowane Aplikacje Webowe · JavaScript</p>
+  <h1>Funkcje strzałkowe</h1>
+  <div class="title-code"><span class="k">const</span> podwoj = x =&gt; x * <span class="n">2</span>;<span class="cursor"></span></div>
+  <p class="lead">Krótszy zapis funkcji, który znasz z map i filter. Zobaczysz, jak powstaje ze „zwykłej” funkcji, kiedy potrzebne są nawiasy i <code>return</code> oraz czym strzałka różni się od <code>function</code>.</p>
+  <div class="row"><label class="inl">Wypróbuj: podwoj(<input type="number" id="s0x" value="21" style="width:5em">)</label><span class="mono" id="s0out"></span></div>
+  <p class="meta">Sterowanie: strzałki ← →, spacja lub przyciski na dole.</p>
+</div></section>
+
+<section class="slide" data-title="Plan"><div class="inner">
+  <h2>Plan</h2>
+  <p class="lead">Kliknij temat, aby do niego przejść.</p>
+  <ul class="agenda">
+   <li><button data-go="2"><span class="t">function →</span>Od zwykłej funkcji do strzałki</button></li>
+   <li><button data-go="3"><span class="t">( ) { }</span>Zasady zapisu: oceń kafelki</button></li>
+   <li><button data-go="4"><span class="t">this</span>Strzałka nie ma własnego this</button></li>
+   <li><button data-go="5"><span class="t">kolejność</span>Wywołanie przed definicją</button></li>
+   <li><button data-go="6"><span class="t">błędy</span>Znajdź 3 błędy</button></li>
+   <li><button data-go="7"><span class="t">ćwiczenie</span>Przepisz funkcję na strzałkę</button></li>
+   <li><button data-go="8"><span class="t">?</span>Quiz</button></li>
+  </ul>
+</div></section>
+
+<section class="slide" data-title="Od function"><div class="inner">
+  <h2>Od zwykłej funkcji do strzałki</h2>
+  <p class="lead">Cztery zapisy tej samej funkcji. Przechodź krok po kroku i patrz, co znika. Wynik się nie zmienia.</p>
+  <div class="row"><button class="btn" id="mPrev">← Poprzedni zapis</button><button class="btn primary" id="mNext">Następny zapis →</button><label class="inl">podwoj(<input type="number" id="mX" value="21" style="width:5em">)</label></div>
+  <div class="two">
+   <div><div class="codebox" id="mCode" style="font-size:clamp(1rem,1.6vw,1.6rem)"></div><p id="mTxt"></p></div>
+   <div><div class="out" id="mOut" style="font-size:clamp(1rem,1.4vw,1.4rem)"></div></div>
+  </div>
+</div></section>
+
+<section class="slide" data-title="Zasady zapisu"><div class="inner">
+  <h2>Zasady zapisu: oceń kafelki</h2>
+  <p class="lead">Przy każdym kodzie wybierz: <b>✓</b> działa · <b>⚠</b> działa, ale zwraca <code>undefined</code> · <b>✗</b> błąd składni.</p>
+  <div id="zGrid" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px"></div>
+  <div class="row"><button class="btn" id="zReset">Od nowa</button><span class="mono" id="zScore"></span></div>
+  <div class="out" id="zOut" style="min-height:3.2em"></div>
+</div></section>
+
+<section class="slide" data-title="this"><div class="inner">
+  <h2>Strzałka nie ma własnego <code>this</code></h2>
+  <p class="lead">W zwykłej metodzie <code>this</code> to obiekt przed kropką. Strzałka tak nie działa. Przewidź, co zwróci każde wywołanie.</p>
+  <div class="two">
+   <div><div class="codebox" id="tCode"></div><p class="note" style="margin-top:.8em">metoda z this → zwykła funkcja</p></div>
+   <div><div id="tQs"></div><div class="out" id="tOut" style="min-height:2.4em;margin-top:.6em"></div><p id="tTxt"></p><div class="row"><button class="btn" id="tReset">Od nowa</button></div></div>
+  </div>
+</div></section>
+
+<section class="slide" data-title="Kolejność"><div class="inner">
+  <h2>Wywołanie przed definicją</h2>
+  <p class="lead">Czy można użyć funkcji w linijce <mark>wyżej</mark>, niż ją zapisano? Przy każdej wersji wybierz odpowiedź.</p>
+  <div id="hGrid" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px"></div>
+  <div class="row"><button class="btn" id="hReset">Od nowa</button></div>
+</div></section>
+
+<section class="slide" data-title="Znajdź błędy"><div class="inner">
+  <h2>Znajdź 3 błędy</h2>
+  <p class="lead">Kliknij linijki z błędem: składni albo „cichym”, gdy funkcja zwraca <code>undefined</code>. Potem kliknij „Sprawdź”.</p>
+  <div class="two">
+   <div><div class="codebox" id="eCode"></div><div class="row" style="margin-top:1em"><button class="btn primary" id="eCheck">Sprawdź</button><button class="btn" id="eReset">Od nowa</button></div></div>
+   <div><div class="out" id="eOut" style="min-height:8em"></div></div>
+  </div>
+</div></section>
+
+<section class="slide" data-title="Ćwiczenie"><div class="inner">
+  <h2>Przepisz na strzałkę</h2>
+  <p class="lead">Zapisz ten sam kod ze strzałką zamiast <code>function</code>. Zachowaj nazwy. Najkrótszy zapis jest najlepszy, ale wersja z klamrami i <code>return</code> też się liczy.</p>
+  <div class="two">
+   <div>
+    <p class="mono" id="pNr" style="margin:0 0 .3em"></p>
+    <div class="codebox" id="pSrc"></div>
+    <div class="row" style="margin-top:1em"><input type="text" id="pIn" style="width:100%" aria-label="twój kod ze strzałką" autocomplete="off" spellcheck="false"></div>
+    <div class="row"><button class="btn primary" id="pCheck">Sprawdź</button><button class="btn" id="pShow">Pokaż rozwiązanie</button><button class="btn" id="pNext">Następne zadanie →</button></div>
+   </div>
+   <div><div class="out" id="pOut" style="min-height:4em"></div><p class="mono" id="pScore"></p></div>
+  </div>
+</div></section>
+
+<section class="slide" data-title="Quiz"><div class="inner quiz" id="quiz"></div></section>
+
+<section class="slide" data-title="Podsumowanie"><div class="inner">
+  <h2>Do zapamiętania</h2>
+  <ul class="check">
+   <li>Strzałka: <code>(parametry) =&gt; wyrażenie</code> albo <code>(parametry) =&gt; { …; return …; }</code>.</li>
+   <li>Jeden parametr: nawiasy można pominąć. Zero lub kilka: nawiasy obowiązkowe.</li>
+   <li>Bez klamer wynik zwraca się sam; z klamrami potrzebny <code>return</code>.</li>
+   <li>Obiekt zwracany wprost bierzesz w nawiasy: <code>() =&gt; ({ a: 1 })</code>.</li>
+   <li>Strzałki to wygodne callbacki: <code>map</code>, <code>filter</code>, <code>sort</code>, <code>setTimeout</code>.</li>
+   <li>Strzałka nie ma własnego <code>this</code>: metody z <code>this</code> pisz jako <code>function</code>.</li>
+   <li>Strzałkę w <code>const</code> wywołujesz dopiero poniżej jej definicji.</li>
+  </ul>
+  <p class="links">Dokumentacja MDN: <a href="https://developer.mozilla.org/pl/docs/Web/JavaScript/Reference/Functions/Arrow_functions" target="_blank" rel="noopener">funkcje strzałkowe</a> · <a href="https://developer.mozilla.org/pl/docs/Web/JavaScript/Reference/Operators/this" target="_blank" rel="noopener">this</a> · <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort" target="_blank" rel="noopener">sort()</a></p>
+  <div class="row"><button class="btn" data-go="8">↺ Wróć do quizu</button><button class="btn" data-go="7">Wróć do ćwiczenia</button></div>
+  <p class="note">Dalej: łańcuch metod tablic i reduce</p>
+</div></section>
+
+</main>
+<nav class="ctl" aria-label="Nawigacja prezentacji">
+ <button class="navbtn" id="prev" aria-label="Poprzedni slajd">‹</button>
+ <div class="dots" id="dots"></div>
+ <span class="count" id="count"></span>
+ <button class="navbtn" id="next" aria-label="Następny slajd">›</button>
+ <button class="theme" id="theme" aria-label="Zmień motyw jasny/ciemny">◐</button>
+</nav>
+
+<script>
+(function(){
+const KEY='zaw-funkcje-strzalkowe-js';
+const $=id=>document.getElementById(id);
+const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const slides=[...document.querySelectorAll('.slide')];
+const dots=$('dots'),count=$('count');
+let cur=0;
+slides.forEach((s,i)=>{const b=document.createElement('button');b.setAttribute('aria-label',(i+1)+'. '+s.dataset.title);b.title=s.dataset.title;b.onclick=()=>go(i);dots.appendChild(b)});
+function go(i){
+  i=Math.max(0,Math.min(slides.length-1,i));cur=i;
+  slides.forEach((s,k)=>{s.classList.toggle('active',k===i);s.classList.toggle('before',k<i);s.setAttribute('aria-hidden',k!==i)});
+  [...dots.children].forEach((d,k)=>{d.className=k===i?'cur':(k<i?'done':'')});
+  count.textContent=(i+1)+' / '+slides.length;
+  try{history.replaceState(null,'','#'+(i+1))}catch(e){}
+  try{localStorage.setItem(KEY+'-slide',i)}catch(e){}
+}
+$('prev').onclick=()=>go(cur-1);$('next').onclick=()=>go(cur+1);
+document.addEventListener('keydown',e=>{
+  if(e.target.matches('input,select'))return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'||(e.key===' '&&!e.target.matches('button'))){e.preventDefault();go(cur+1)}
+  if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1)}
+  if(e.key==='Home')go(0);if(e.key==='End')go(slides.length-1);
+});
+let tx=null;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX},{passive:true});
+document.addEventListener('touchend',e=>{if(tx===null)return;const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>70&&!e.target.closest('.codebox,.console,.out,input,.bars'))go(cur+(dx<0?1:-1));tx=null},{passive:true});
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(+b.dataset.go));
+const root=document.documentElement;
+$('theme').onclick=()=>{const dark=root.dataset.theme?root.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;root.dataset.theme=dark?'light':'dark';try{localStorage.setItem('cppkurs-theme',root.dataset.theme)}catch(e){}};
+try{const t=localStorage.getItem('cppkurs-theme');if(t)root.dataset.theme=t}catch(e){}
+
+function bindExplain(boxId,outId,map){
+  const box=$(boxId),out=$(outId);
+  box.querySelectorAll('[data-ex]').forEach(b=>b.onclick=()=>{
+    box.querySelectorAll('[data-ex]').forEach(x=>x.classList.remove('on'));
+    box.querySelectorAll('[data-ex="'+b.dataset.ex+'"]').forEach(x=>x.classList.add('on'));
+    const e=map[b.dataset.ex];out.innerHTML='<h3>'+e[0]+'</h3><p>'+e[1]+'</p>';
+  });
+}
+function hlLines(boxId,set){$(boxId).querySelectorAll('.ln').forEach(l=>l.classList.toggle('on',set.includes(+l.dataset.n)))}
+function makeQuiz(el,Q){
+  let qi=0,score=0;
+  function show(){
+    if(qi>=Q.length){
+      el.innerHTML='<h2>Wynik: '+score+' / '+Q.length+'</h2><p class="lead">'+(score===Q.length?'Komplet! Możesz śmiało ruszać do kolejnego odcinka.':score>=Q.length-2?'Bardzo dobrze. Przejrzyj jeszcze slajdy z pytań, w których był błąd.':'Warto wrócić do wcześniejszych slajdów, a potem spróbować ponownie.')+'</p><div class="row"><button class="btn primary" id="qAgain">Spróbuj ponownie</button></div>';
+      $('qAgain').onclick=()=>{qi=0;score=0;show()};return;
+    }
+    const q=Q[qi];
+    el.innerHTML='<p class="qnum">Pytanie '+(qi+1)+' z '+Q.length+'</p><h2>'+esc(q[0])+'</h2>'+(q[4]?'<div class="codebox" style="max-width:640px;margin-bottom:.5em">'+q[4].split('\n').map((l,k)=>'<div class="ln" data-n="'+(k+1)+'">'+esc(l)+'</div>').join('')+'</div>':'')+'<div class="opts"></div><p class="fb" aria-live="polite"></p><div class="row"><button class="btn primary" id="qNext" hidden>'+(qi===Q.length-1?'Pokaż wynik':'Następne pytanie')+'</button></div>';
+    const o=el.querySelector('.opts'),fb=el.querySelector('.fb'),nx=$('qNext');
+    q[1].forEach((t,i)=>{const b=document.createElement('button');b.textContent=t;
+      b.onclick=()=>{[...o.children].forEach((x,k)=>{x.disabled=true;if(k===q[2])x.classList.add('right')});
+        if(i===q[2]){score++;fb.innerHTML='<b>Dobrze!</b> '+q[3]}else{b.classList.add('wrong');fb.innerHTML='<b>Nie tym razem.</b> '+q[3]}
+        nx.hidden=false;nx.focus()};o.appendChild(b)});
+    nx.onclick=()=>{qi++;show()};
+  }
+  show();
+}
+
+(function(){
+// ===== pomocnicze =====
+function fmtW(v){
+  if(typeof v==='string')return "'"+v+"'";
+  if(v===undefined)return 'undefined';
+  if(v===null)return 'null';
+  if(typeof v==='number'&&Number.isNaN(v))return 'NaN';
+  if(Array.isArray(v))return '['+v.map(fmtW).join(', ')+']';
+  if(typeof v==='object')return '{ '+Object.entries(v).map(([k,x])=>k+': '+fmtW(x)).join(', ')+' }';
+  return String(v);
+}
+function kodLinie(id,L){$(id).innerHTML=L.map((l,i)=>'<div class="ln" data-n="'+(i+1)+'">'+esc(l)+'</div>').join('')}
+function pokoloruj(b,kolor){b.style.background=kolor;b.style.color='#fff';b.style.borderColor=kolor;b.style.opacity='1'}
+const DOBRZE='<b style="color:var(--ok)">Dobrze!</b> ',ZLE='<b style="color:var(--bad)">Nie tym razem.</b> ';
+
+// ===== start =====
+function s0(){const x=Number($('s0x').value);$('s0out').textContent='→ '+fmtW(x*2)}
+$('s0x').oninput=s0;s0();
+
+// ===== od function do strzałki =====
+const MS=[
+ [['function podwoj(x) {','  return x * 2;','}'],x=>x*2,'<b>1. Deklaracja funkcji.</b> Słowo <code>function</code>, nazwa, parametr w nawiasach, ciało w klamrach z <code>return</code>.'],
+ [['const podwoj = function (x) {','  return x * 2;','};'],x=>x*2,'<b>2. Wyrażenie funkcyjne.</b> Funkcja bez nazwy zapisana w stałej, tak jak liczba czy napis. Nazwą jest teraz nazwa stałej.'],
+ [['const podwoj = (x) => {','  return x * 2;','};'],x=>x*2,'<b>3. Strzałka z blokiem.</b> Znika słowo <code>function</code>, a między parametrami i klamrą pojawia się <code>=&gt;</code>.'],
+ [['const podwoj = x => x * 2;'],x=>x*2,'<b>4. Strzałka skrócona.</b> Ciało to samo <code>return</code>, więc znikają klamry i <code>return</code>: wynik zwraca się sam. Jeden parametr, więc nawiasy wokół <code>x</code> można pominąć.']
+];
+let mi=0;
+function mDraw(){const m=MS[mi],x=Number($('mX').value);kodLinie('mCode',m[0]);$('mTxt').innerHTML=m[2];
+  $('mOut').textContent='podwoj('+x+')  →  '+fmtW(m[1](x))+'\n\nzapis '+(mi+1)+' z '+MS.length+'  ·  znaków: '+m[0].map(s=>s.trim()).join(' ').length;
+  $('mPrev').disabled=mi===0;$('mNext').disabled=mi===MS.length-1;}
+$('mPrev').onclick=()=>{if(mi>0){mi--;mDraw()}};
+$('mNext').onclick=()=>{if(mi<MS.length-1){mi++;mDraw()}};
+$('mX').oninput=mDraw;mDraw();
+
+// ===== zasady zapisu: kafelki =====
+const ZT=[
+ ['const f = () => 42;','ok','f() → 42','Zero parametrów: puste nawiasy są obowiązkowe.'],
+ ['const f = => 42;','err','SyntaxError','Bez parametrów i tak trzeba napisać puste nawiasy ().'],
+ ['const f = x, y => x + y;','err','SyntaxError','Kilka parametrów trzeba wziąć w nawiasy: (x, y) => x + y.'],
+ ['const f = (x, y) => x + y;','ok','f(2, 3) → 5','Dwa parametry w nawiasach: poprawnie.'],
+ ['const f = x => { x * 2 };','warn','f(5) → undefined','Klamry tworzą blok bez return, więc funkcja zwraca undefined.'],
+ ['const f = x => { return x * 2; };','ok','f(5) → 10','Blok z return: dobry wybór, gdy funkcja ma kilka instrukcji.'],
+ ['const f = x => { imie: x };','warn',"f('Filemon') → undefined",'JavaScript widzi tu blok kodu, a nie obiekt. Zwraca undefined.'],
+ ['const f = x => ({ imie: x });','ok',"f('Filemon') → { imie: 'Filemon' }",'Nawiasy okrągłe wokół klamer: zwracamy obiekt.']
+];
+const ZLAB={ok:'✓',warn:'⚠',err:'✗'};
+let zScore=0,zDone=0;
+function zBuild(){zScore=0;zDone=0;
+  $('zGrid').innerHTML=ZT.map((z,i)=>'<div style="border:2px solid var(--ink);background:var(--panel);padding:.5em .6em"><div class="mono" style="white-space:pre-wrap;min-height:2.6em">'+esc(z[0])+'</div><div class="row" style="margin:.4em 0 0">'+['ok','warn','err'].map(k=>'<button class="btn" data-zi="'+i+'" data-zk="'+k+'" style="padding:.3em .9em">'+ZLAB[k]+'</button>').join('')+'</div></div>').join('');
+  $('zGrid').querySelectorAll('[data-zi]').forEach(b=>b.onclick=()=>zPick(+b.dataset.zi,b.dataset.zk,b));
+  $('zOut').textContent='Kliknij ✓, ⚠ albo ✗ przy każdym kafelku.';$('zScore').textContent='';}
+function zPick(i,k,btn){const z=ZT[i];
+  const grupa=$('zGrid').querySelectorAll('[data-zi="'+i+'"]');
+  if(grupa[0].disabled)return;
+  grupa.forEach(b=>{b.disabled=true;b.style.opacity='1';if(b.dataset.zk===z[1])pokoloruj(b,'var(--ok)');else if(b===btn)pokoloruj(b,'var(--bad)')});
+  zDone++;if(k===z[1])zScore++;
+  $('zOut').innerHTML=(k===z[1]?'<span style="color:#6FD8A2">Dobrze!</span> ':'<span class="warn">Nie tym razem.</span> ')+esc(z[0])+'\n'+esc(z[2])+'  —  '+esc(z[3]);
+  $('zScore').textContent='Wynik: '+zScore+' / '+zDone+(zDone===ZT.length?'  (wszystkie ocenione)':'');}
+$('zReset').onclick=zBuild;zBuild();
+
+// ===== this =====
+kodLinie('tCode',['const kot = {',"  imie: 'Filemon',",'  przedstaw: function () {',"    return 'Jestem ' + this.imie;",'  },',"  przedstawStrzalka: () => 'Jestem ' + this.imie",'};']);
+const TOPT=["'Jestem Filemon'","'Jestem undefined'",'błąd'];
+const TQ=[
+ ['kot.przedstaw()',[3,4,5],0,'Zwykła funkcja wywołana z kropką: <code>this</code> to obiekt przed kropką, czyli <code>kot</code>.'],
+ ['kot.przedstawStrzalka()',[6],1,'Strzałka nie ma własnego <code>this</code> i nie patrzy na obiekt przed kropką. <code>this.imie</code> nie istnieje, więc wychodzi <code>undefined</code>. Dlatego metod z <code>this</code> nie piszemy strzałką.']
+];
+function tBuild(){
+  $('tQs').innerHTML=TQ.map((q,i)=>'<p class="mono" style="margin:.5em 0 .2em">'+esc(q[0])+'  →  ?</p><div class="row" style="margin-top:0">'+TOPT.map((o,k)=>'<button class="btn" data-tq="'+i+'" data-to="'+k+'">'+esc(o)+'</button>').join('')+'</div>').join('');
+  $('tQs').querySelectorAll('[data-tq]').forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.tq,k=+b.dataset.to,q=TQ[i];
+    const grupa=$('tQs').querySelectorAll('[data-tq="'+i+'"]');
+    if(grupa[0].disabled)return;
+    grupa.forEach(x=>{x.disabled=true;x.style.opacity='1';if(+x.dataset.to===q[2])pokoloruj(x,'var(--ok)');else if(x===b)pokoloruj(x,'var(--bad)')});
+    hlLines('tCode',q[1]);
+    $('tOut').textContent=q[0]+'  →  '+TOPT[q[2]];
+    $('tTxt').innerHTML=(k===q[2]?DOBRZE:ZLE)+q[3];
+  });
+  hlLines('tCode',[]);$('tOut').textContent='Wybierz odpowiedź przy każdym wywołaniu.';$('tTxt').textContent='';
+}
+$('tReset').onclick=tBuild;tBuild();
+
+// ===== kolejność (hoisting) =====
+const HV=[
+ [['const w = razy3(2);','','function razy3(x) {','  return x * 3;','}'],true,[1],'w → 6','Deklarację <code>function</code> JavaScript „wynosi” na początek (hoisting), więc wywołanie wyżej działa.'],
+ [['const w = razy3(2);','','const razy3 = x => x * 3;'],false,[1],"ReferenceError: Cannot access 'razy3' before initialization",'Stała <code>razy3</code> istnieje dopiero od swojej linijki. Skrypt zatrzymuje się błędem.'],
+ [['const razy3 = x => x * 3;','','const w = razy3(2);'],true,[3],'w → 6','Najpierw definicja, potem wywołanie. Tak zawsze pisz strzałki.']
+];
+function hBuild(){
+  $('hGrid').innerHTML=HV.map((h,i)=>'<div><p class="mono" style="margin:0 0 .3em">Wersja '+(i+1)+'</p><div class="codebox" id="hC'+i+'"></div><div class="row" style="margin-top:.8em"><button class="btn" data-hv="'+i+'" data-hp="1">zadziała</button><button class="btn" data-hv="'+i+'" data-hp="0">błąd</button></div><div class="out" id="hO'+i+'" style="min-height:2.4em">?</div><p id="hT'+i+'"></p></div>').join('');
+  HV.forEach((h,i)=>kodLinie('hC'+i,h[0]));
+  $('hGrid').querySelectorAll('[data-hv]').forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.hv,h=HV[i],typ=b.dataset.hp==='1';
+    const grupa=$('hGrid').querySelectorAll('[data-hv="'+i+'"]');
+    if(grupa[0].disabled)return;
+    grupa.forEach(x=>{x.disabled=true;x.style.opacity='1';if((x.dataset.hp==='1')===h[1])pokoloruj(x,'var(--ok)');else if(x===b)pokoloruj(x,'var(--bad)')});
+    hlLines('hC'+i,h[2]);
+    $('hO'+i).innerHTML=h[1]?'<span style="color:#6FD8A2">'+esc(h[3])+'</span>':'<span class="warn">'+esc(h[3])+'</span>';
+    $('hT'+i).innerHTML=(typ===h[1]?DOBRZE:ZLE)+h[4];
+  });
+}
+$('hReset').onclick=hBuild;hBuild();
+
+// ===== znajdź błędy =====
+const EL=[
+ ['const kwadrat = x => x * x;',''],
+ ['const pole = a, b => a * b;','Kilka parametrów bez nawiasów: błąd składni. Poprawnie: (a, b) => a * b.'],
+ ["const powitanie = () => 'Cześć!';",''],
+ ['const podwoj = x => { x * 2 };','Klamry bez return: funkcja zwraca undefined. Usuń klamry albo dopisz return.'],
+ ['const zrobKota = imie => { imie: imie };','Klamry wzięte za blok kodu: zwraca undefined. Obiekt weź w nawiasy: ({ imie: imie }).'],
+ ['const ceny = [10, 20].map(c => c * 2);',''],
+ ['const srednia = (a, b) => {',''],
+ ['  return (a + b) / 2;',''],
+ ['};','']
+];
+const E_ILE=EL.filter(e=>e[1]).length;
+let eDone=false;
+function eLicz(){return $('eCode').querySelectorAll('.ln.on').length}
+function eBuild(){eDone=false;
+  $('eCode').innerHTML=EL.map((e,i)=>'<button class="ln" data-n="'+(i+1)+'" data-el="'+i+'">'+esc(e[0])+'</button>').join('');
+  $('eCode').querySelectorAll('[data-el]').forEach(b=>b.onclick=()=>{if(eDone)return;b.classList.toggle('on');$('eOut').textContent='Zaznaczone linijki: '+eLicz()+'. Szukasz '+E_ILE+' błędów.'});
+  $('eOut').textContent='Zaznaczone linijki: 0. Szukasz '+E_ILE+' błędów.';
+}
+$('eCheck').onclick=()=>{if(eDone)return;eDone=true;
+  let traf=0,zle=0;const opis=[];
+  $('eCode').querySelectorAll('[data-el]').forEach(b=>{const i=+b.dataset.el,blad=!!EL[i][1],zazn=b.classList.contains('on');
+    b.classList.remove('on');
+    if(blad&&zazn){traf++;pokoloruj(b,'var(--ok)')}
+    else if(blad){b.style.boxShadow='inset 8px 0 0 var(--bad)'}
+    else if(zazn){zle++;pokoloruj(b,'var(--bad)')}
+    if(blad)opis.push('Linia '+(i+1)+': '+EL[i][1]);
+  });
+  $('eOut').innerHTML='<b>Znalezione: '+traf+' / '+E_ILE+'</b>'+(zle?'  ·  <span class="warn">błędnie zaznaczone: '+zle+'</span>':'')+'\n\n'+opis.map(esc).join('\n');
+};
+$('eReset').onclick=eBuild;eBuild();
+
+// ===== ćwiczenie: przepisz na strzałkę =====
+function normKod(s){return s.replace(/["`]/g,"'").replace(/\b(let|var)\b/g,'const').replace(/\s+/g,'').replace(/;+(?=\})/g,'').replace(/;+$/,'')}
+function warianty(pre,par,cia,suf){const w=[];par.forEach(p=>cia.forEach(c=>w.push(normKod(pre+p+' => '+c+suf))));return w}
+const PT=[
+ {src:['function kwadrat(x) {','  return x * x;','}'],ok:warianty('const kwadrat = ',['x','(x)'],['x * x','{ return x * x; }'],';'),wz:'const kwadrat = x => x * x;'},
+ {src:['function pole(a, b) {','  return a * b;','}'],ok:warianty('const pole = ',['(a, b)'],['a * b','{ return a * b; }'],';'),wz:'const pole = (a, b) => a * b;'},
+ {src:['function miau() {',"  return 'Miau!';",'}'],ok:warianty('const miau = ',['()'],["'Miau!'","{ return 'Miau!'; }"],';'),wz:"const miau = () => 'Miau!';"},
+ {src:['const duze = liczby.filter(function (x) {','  return x > 10;','});'],ok:warianty('const duze = liczby.filter(',['x','(x)'],['x > 10','{ return x > 10; }'],');'),wz:'const duze = liczby.filter(x => x > 10);'},
+ {src:['function zrobKota(imie) {','  return { imie: imie };','}'],ok:warianty('const zrobKota = ',['imie','(imie)'],['({ imie: imie })','({ imie })','{ return { imie: imie }; }','{ return { imie }; }'],';'),wz:'const zrobKota = imie => ({ imie: imie });'},
+ {src:['setTimeout(function () {',"  console.log('Koniec');",'}, 1000);'],ok:warianty('setTimeout(',['()'],["console.log('Koniec')","{ console.log('Koniec'); }"],', 1000);'),wz:"setTimeout(() => console.log('Koniec'), 1000);",blokOk:true}
+];
+let pi=0;const pZal=new Set();
+function pNaglowek(){$('pNr').textContent='Zadanie '+(pi+1)+' z '+PT.length+(pZal.has(pi)?'  ✓ zaliczone':'')}
+function pWynik(){$('pScore').textContent='Zaliczone: '+pZal.size+' / '+PT.length}
+function pDraw(){kodLinie('pSrc',PT[pi].src);$('pIn').value='';pNaglowek();pWynik();
+  $('pOut').textContent='Wpisz kod ze strzałką i kliknij „Sprawdź” (albo Enter).';}
+function pPodp(n,t){
+  if(/function/.test(n))return 'Usuń słowo function: strzałka go nie potrzebuje.';
+  if(!/=>/.test(n))return 'Brakuje strzałki =>.';
+  if(/==>/.test(n))return 'Bez parametrów i tak napisz puste nawiasy: () =>.';
+  if(/=\w+,\w+=>/.test(n))return 'Kilka parametrów trzeba wziąć w nawiasy: (a, b) =>.';
+  if(/=>\{(?!return)\w+:/.test(n))return 'Zwracany obiekt weź w nawiasy okrągłe: ({ … }).';
+  if(/=>\{/.test(n)&&!/return/.test(n)&&!t.blokOk)return 'Masz klamry bez return: funkcja zwróci undefined.';
+  return 'Sprawdź nazwy i parametry: mają być takie jak w oryginale.';
+}
+$('pCheck').onclick=()=>{const raw=$('pIn').value,n=normKod(raw),t=PT[pi];
+  if(!n){$('pOut').textContent='Najpierw wpisz kod.';return}
+  if(t.ok.includes(n)){pZal.add(pi);pNaglowek();pWynik();$('pOut').innerHTML='<span style="color:#6FD8A2">✓ Dobrze!</span>\n'+esc(raw.trim())}
+  else $('pOut').innerHTML='<span class="warn">✗ Jeszcze nie.</span> '+esc(pPodp(n,t));
+};
+$('pShow').onclick=()=>{$('pOut').innerHTML='Przykładowe rozwiązanie:\n<span style="color:#FFE45C">'+esc(PT[pi].wz)+'</span>'};
+$('pNext').onclick=()=>{pi=(pi+1)%PT.length;pDraw()};
+$('pIn').addEventListener('keydown',e=>{if(e.key==='Enter')$('pCheck').click()});
+pDraw();
+
+// ===== quiz =====
+makeQuiz($('quiz'),[
+ ['Która strzałka działa tak samo jak ta funkcja?',['x => { x + 1 }','x => x + 1','(x) => return x + 1','=> x + 1'],1,'Bez klamer wynik wyrażenia zwraca się sam. Wersja z klamrami bez return zwróci undefined.','function (x) {\n  return x + 1;\n}'],
+ ['Co zwróci wywołanie f(5)?',['10','null','błąd składni','undefined'],3,'Klamry tworzą blok, a w nim nie ma return.','const f = x => { x * 2 };'],
+ ['Który zapis jest błędem składni?',['() => 1','x => x','a, b => a + b','(a, b) => a + b'],2,'Kilka parametrów trzeba wziąć w nawiasy: (a, b) => a + b.'],
+ ['Co zwróci wywołanie f()?',['{ a: 1 }','undefined','1','błąd'],0,'Nawiasy okrągłe wokół klamer mówią: to obiekt do zwrócenia, a nie blok kodu.','const f = () => ({ a: 1 });'],
+ ['Co się stanie po uruchomieniu?',['ReferenceError','w = 6','w = undefined','w = NaN'],0,'Stała razy2 nie istnieje przed swoją linijką, w odróżnieniu od deklaracji function.','const w = razy2(3);\nconst razy2 = x => x * 2;'],
+ ['Co zwróci kot.przedstaw()?',["'Jestem Bonifacy'","'Jestem undefined'",'błąd składni','undefined'],1,'Strzałka nie ma własnego this, więc this.imie nie wskazuje na kota.',"const kot = {\n  imie: 'Bonifacy',\n  przedstaw: () => 'Jestem ' + this.imie\n};"],
+ ['Co zwróci ten kod?',['[1, 10, 25, 9]','[25, 10, 9, 1]','[1, 9, 10, 25]','[10, 9, 1, 25]'],2,'(a, b) => a - b sortuje liczby rosnąco. Bez funkcji sort porównałby je jak tekst.','[10, 9, 1, 25].sort((a, b) => a - b)']
+]);
+})();
+
+let start=0;const h=parseInt(location.hash.slice(1));
+if(h>0)start=h-1;else{try{const s=localStorage.getItem(KEY+'-slide');if(s)start=+s}catch(e){}}
+go(start);
+
+})();
+</script>
+<!-- materialy.py: poprawki nawigacji prezentacji (ankieta uczniów 10.2026), wklejane przed </body> po build.py skilla -->
+<style>
+.dots button,.dots button.done,.dots button.cur{height:28px;padding:10px 0;background-clip:content-box}
+.dots button.cur{padding:8px 0}
+.navbtn{width:52px;height:52px;font-size:1.5rem}
+textarea,input,code,pre,.codebox{font-variant-ligatures:none}
+.navhint{font-family:var(--mono);font-size:.8rem;color:var(--ink-soft);white-space:nowrap}
+.navhint[hidden]{display:none}
+@media (max-width:560px){.navhint{display:none}}
+.quiz .opts{counter-reset:opt}
+.quiz .opts button{counter-increment:opt;display:flex;align-items:baseline;gap:.6em;white-space:pre-wrap}
+.quiz h2{white-space:pre-wrap}
+.quiz .opts button::before{content:counter(opt);flex:none;display:inline-grid;place-items:center;width:1.7em;height:1.7em;border:2px solid currentColor;font-family:var(--mono);font-size:.85em;font-weight:600}
+.quiz .qnum::after{content:" · odpowiedź: klawisz 1–4, dalej: Enter";color:var(--ink-soft);font-size:.85em}
+@media (hover:none){.quiz .qnum::after{content:none}}
+</style>
+<script>
+(function () {
+  var next = document.getElementById("next"), prev = document.getElementById("prev"), nav = document.querySelector("nav.ctl");
+  if (!next || !prev || !nav) return;
+  var hint = document.createElement("span");
+  hint.className = "navhint";
+  hint.hidden = true;
+  hint.textContent = "Esc — wróć do slajdów";
+  nav.insertBefore(hint, document.getElementById("count"));
+  function field(t) { return !!t && (t.isContentEditable || (t.matches && t.matches("input,select,textarea"))); }
+  function stop(e) { e.stopPropagation(); }
+  // Klawisz w polu do pisania nie może dojść do nawigacji skilla (ona pomija tylko input/select, więc spacja
+  // w <textarea> przełączała slajd). Faza przechwytywania: Esc oddaje klawiaturę slajdom, PageDown/PageUp
+  // i Alt+strzałki przełączają z pola; resztę zatrzymuje jednorazowy słuchacz na samym polu — po obsłudze
+  // przez stronę, przed nawigacją na document.
+  document.addEventListener("keydown", function (e) {
+    var t = e.target;
+    if (!field(t)) return;
+    if (e.key === "Escape") { e.preventDefault(); t.blur(); }
+    else if (e.key === "PageDown" || (e.altKey && e.key === "ArrowRight")) { e.preventDefault(); t.blur(); next.click(); }
+    else if (e.key === "PageUp" || (e.altKey && e.key === "ArrowLeft")) { e.preventDefault(); t.blur(); prev.click(); }
+    else t.addEventListener("keydown", stop, {once: true});
+  }, true);
+  // Enter przełącza dalej, gdy fokus nie stoi na niczym klikalnym (przycisk, link, rozwijane) ani w polu.
+  document.addEventListener("keydown", function (e) {
+    var t = e.target;
+    if (e.key === "Enter" && !e.defaultPrevented && !field(t) && !(t.closest && t.closest("button,a,summary,label,[tabindex]"))) {
+      e.preventDefault(); next.click();
+    }
+  });
+  // Quiz skilla: cyfra wybiera odpowiedź na aktywnym slajdzie (Enter potem klika „Następne pytanie”, które ma fokus).
+  document.addEventListener("keydown", function (e) {
+    if (e.altKey || e.ctrlKey || e.metaKey || !/^[1-9]$/.test(e.key) || field(e.target)) return;
+    var opts = document.querySelector(".slide.active .quiz .opts");
+    var b = opts && opts.querySelectorAll("button")[+e.key - 1];
+    if (b && !b.disabled) { e.preventDefault(); b.click(); }
+  });
+  // Po wyborze z listy, pola wyboru albo suwaka (myszką) klawiatura wraca do slajdów.
+  document.addEventListener("change", function (e) {
+    if (e.target.matches("select,input[type=checkbox],input[type=radio]")) e.target.blur();
+  });
+  document.addEventListener("pointerup", function (e) {
+    if (e.target.matches && e.target.matches("input[type=range]")) setTimeout(function () { e.target.blur(); }, 0);
+  });
+  document.addEventListener("focusin", function (e) {
+    hint.hidden = !(field(e.target) && !(e.target.matches && e.target.matches("input[type=range],input[type=checkbox],input[type=radio]")));
+  });
+  document.addEventListener("focusout", function () { hint.hidden = true; });
+})();
+</script>
+</body>
+</html>

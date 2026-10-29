@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Funkcje strzałkowe — ćwiczenie</title>
+</head>
+<body>
+  <h1>Funkcje strzałkowe</h1>
+  <p>Otwórz konsolę (F12) i sprawdzaj wyniki po każdej zmianie.</p>
+
+  <script>
+    // TODO 1: przepisz trzy funkcje na strzałki w const
+    // (najkrótszy zapis: bez klamer i bez return)
+    function kwadrat(x) {
+      return x * x;
+    }
+
+    function pole(a, b) {
+      return a * b;
+    }
+
+    function losowyKot() {
+      return 'Filemon';
+    }
+
+    console.log(kwadrat(4));  // 16
+    console.log(pole(3, 5));  // 15
+    console.log(losowyKot()); // Filemon
+
+
+    // TODO 2: zamień funkcje function przekazywane do map i filter na strzałki
+    const ceny = [5, 12, 30, 8];
+
+    const podwojone = ceny.map(function (c) {
+      return c * 2;
+    });
+
+    const drogie = ceny.filter(function (c) {
+      return c > 10;
+    });
+
+    console.log(podwojone); // [10, 24, 60, 16]
+    console.log(drogie);    // [12, 30]
+
+
+    // TODO 3: utwórz obiekt dzialania z czterema strzałkami:
+    // dodaj, odejmij, pomnoz, podziel — każda przyjmuje (a, b).
+    // Przy dzieleniu przez 0 podziel zwraca napis 'Nie dziel przez 0'.
+
+    // const dzialania = { ... };
+
+    // console.log(dzialania.dodaj(12, 4));   // 16
+    // console.log(dzialania.podziel(12, 0)); // Nie dziel przez 0
+  </script>
+</body>
+</html>
