@@ -6,14 +6,14 @@ Najnowsze na górze. W folderze każdego zagadnienia: `sciaga.html`, `prezentacj
 
 Temat: Powtórzenie wiadomości z Javascript - tablice / Powtórzenie wiadomości z Javascript
 
-- **Na lekcji:** [Funkcje strzałkowe w JavaScript: zapis, return i this](zaw/09-funkcje-strzalkowe-js/sciaga.html) · [Łańcuch metod tablic: filter, map i reduce](zaw/10-lancuch-metod-tablic-js/sciaga.html) · [Lista HTML z tablicy: map, join i innerHTML](zaw/11-lista-html-z-tablicy-js/sciaga.html) · [Szukanie w tablicy: find, findIndex, some i every](zaw/12-find-some-every-js/sciaga.html)
-- **Powtórz:** [Funkcje w JavaScript: parametry i return](zaw/05-funkcje-js/sciaga.html) · [Metody obiektu w JavaScript: funkcje w obiekcie i this](zaw/07-metody-obiektu-js/sciaga.html) · [Metody tablic map i filter w JavaScript](zaw/02-map-filter-js/sciaga.html) · [Tablica obiektów w JavaScript: lista obsługiwana metodami](zaw/08-tablica-obiektow-js/sciaga.html) · [Zmienne w JavaScript: let, const i template literals](zaw/01-zmienne-js/sciaga.html) · [Instrukcja warunkowa if…else w JavaScript](zaw/03-instrukcja-if-js/sciaga.html)
+- **Na lekcji:** [Funkcje strzałkowe w JavaScript: zapis, return i this](zaw/09-funkcje-strzalkowe-js/sciaga.html) (poprawiono 29.10) · [Łańcuch metod tablic: filter, map i reduce](zaw/10-lancuch-metod-tablic-js/sciaga.html) (poprawiono 29.10) · [Lista HTML z tablicy: map, join i innerHTML](zaw/11-lista-html-z-tablicy-js/sciaga.html) (poprawiono 29.10) · [Szukanie w tablicy: find, findIndex, some i every](zaw/12-find-some-every-js/sciaga.html) (poprawiono 29.10)
+- **Powtórz:** [Funkcje w JavaScript: parametry i return](zaw/05-funkcje-js/sciaga.html) · [Metody obiektu w JavaScript: funkcje w obiekcie i this](zaw/07-metody-obiektu-js/sciaga.html) (poprawiono 29.10) · [Metody tablic map i filter w JavaScript](zaw/02-map-filter-js/sciaga.html) · [Tablica obiektów w JavaScript: lista obsługiwana metodami](zaw/08-tablica-obiektow-js/sciaga.html) (poprawiono 29.10) · [Zmienne w JavaScript: let, const i template literals](zaw/01-zmienne-js/sciaga.html) · [Instrukcja warunkowa if…else w JavaScript](zaw/03-instrukcja-if-js/sciaga.html)
 
 ## 2026-10-16 · Zaawansowane Aplikacje Webowe
 
 Temat: Powtórzenie wiadomości z Javascript
 
-- **Na lekcji:** [Metody obiektu w JavaScript: funkcje w obiekcie i this](zaw/07-metody-obiektu-js/sciaga.html) · [Tablica obiektów w JavaScript: lista obsługiwana metodami](zaw/08-tablica-obiektow-js/sciaga.html)
+- **Na lekcji:** [Metody obiektu w JavaScript: funkcje w obiekcie i this](zaw/07-metody-obiektu-js/sciaga.html) (poprawiono 29.10) · [Tablica obiektów w JavaScript: lista obsługiwana metodami](zaw/08-tablica-obiektow-js/sciaga.html) (poprawiono 29.10)
 - **Powtórz:** [Obiekty w JavaScript: klucze, wartości, pętla for…in](zaw/04-obiekty-js/sciaga.html) · [Funkcje w JavaScript: parametry i return](zaw/05-funkcje-js/sciaga.html) · [Metody tablic map i filter w JavaScript](zaw/02-map-filter-js/sciaga.html) · [Funkcja tworząca obiekty (fabryka) w JavaScript](zaw/06-fabryka-obiektow-js/sciaga.html)
 
 ## 2026-10-09 · Zaawansowane Aplikacje Webowe
